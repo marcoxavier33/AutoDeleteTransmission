@@ -73,5 +73,7 @@ AFTER_CLEAN=$(df -h | grep /DATA | awk '{print $4 " " $5}')
 APP_TOKEN="APP TOKEN"
 USER_TOKEN="USER TOKEN"
 if [[ $SEND_NOTIFICATION == "yes" ]]; then
-	curl -s --form-string "token=$APP_TOKEN" --form-string "user=$USER_TOKEN" --form-string "message=Disk space before clean : $BEFORE_CLEAN<br>Disk space after clean : $AFTER_CLEAN" --form-string "html=1" https://api.pushover.net/1/messages.json > /dev/null
+	if [[ "$BEFORE_CLEAN" != "$AFTER_CLEAN" ]]; then
+		curl -s --form-string "token=$APP_TOKEN" --form-string "user=$USER_TOKEN" --form-string "message=Disk space before clean : $BEFORE_CLEAN<br>Disk space after clean : $AFTER_CLEAN" --form-string "html=1" https://api.pushover.net/1/messages.json > /dev/null
+	fi
 fi
