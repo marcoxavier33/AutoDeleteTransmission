@@ -21,7 +21,7 @@ And here are the optional variables :
 Line 27:
 SEND_NOTIFICATION = "yes" to send a notification on your "Pushover" app and "no" to stop it. 
 
-Line 72 & 73:
+Line 72 & 73: For notification
 APP_TOKEN = your tokens. You'll need to download the app to get the User token and create an application token on their website
 USER_TOKEN = same as APP_TOKEN
 
