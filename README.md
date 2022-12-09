@@ -7,6 +7,8 @@ The goal is simple, the script must be run regularly via the crontab, it will lo
 
 To make it work you will still need to make some changes, here is the list of important things to change:
 
+YOU'LL NEED TO INSTALL JQ
+
 Line 2 & 3: 
 RADARR_PATH and SONARR_PATH = your radarr and sonarr path when imported
 BASE_DIRECTORY = your transmission path downloads
