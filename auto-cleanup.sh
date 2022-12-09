@@ -1,6 +1,6 @@
 #!/bin/bash
-RADARR_PATH="path"
-SONARR_PATH="path"
+RADARR_PATH="path to radarr import files"
+SONARR_PATH="path to sonarr import files"
 BASE_DIRECTORY="path to transmission downloads folder"
 readarray -d '' files1 < <(find $RADARR_PATH -type f -print0; find $SONARR_PATH -type f -print0)
 readarray -d '' files2 < <(find $BASE_DIRECTORY -name *.mkv ! -name '*sample*' -type f -print0)
