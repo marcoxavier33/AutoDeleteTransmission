@@ -1,7 +1,6 @@
 #!/bin/bash
-RADARR_PATH="path to radarr import files"
-SONARR_PATH="path to sonarr import files"
-BASE_DIRECTORY="path to transmission downloads folder"
+source vars.ini
+START_TIME=$(date +%s)
 readarray -d '' files1 < <(find $RADARR_PATH -type f -print0; find $SONARR_PATH -type f -print0)
 readarray -d '' files2 < <(find $BASE_DIRECTORY -name *.mkv ! -name '*sample*' -type f -print0)
 
@@ -24,10 +23,7 @@ do
 	fi
 done
 
-SEND_NOTIFICATION="no"
-AUTO_DELETE="no"
-BEFORE_CLEAN=$(df -h | grep /DATA | awk '{print $4 " " $5}')
-API_URL="http://ip:port/transmission/rpc/"
+BEFORE_CLEAN=$(df -h $BASE_DIRECTORY | awk '{print $4 " " $5}' | sed '1d')
 SESSION_ID=$(curl -s $API_URL | grep -oP '(?<=X-Transmission-Session-Id: )[^<]+')
 for ((u=0; u<${#result[@]}; u++))
 do
@@ -78,11 +74,20 @@ do
 		echo "File not found in transmission or already deleted"
 	fi
 done
-AFTER_CLEAN=$(df -h | grep /DATA | awk '{print $4 " " $5}')
-APP_TOKEN="APP TOKEN"
-USER_TOKEN="USER TOKEN"
+
+END_TIME=$(date +%s)
+ELAPSED_TIME=$((END_TIME-START_TIME))
+hours=$((ELAPSED_TIME / 3600))
+minutes=$((ELAPSED_TIME % 3600 / 60))
+seconds=$((ELAPSED_TIME % 60))
+EXEC_TIME=$(printf "Temps d'exécution : %02d:%02d:%02d\n" $hours $minutes $seconds)
+AFTER_CLEAN=$(df -h $BASE_DIRECTORY | awk '{print $4 " " $5}' | sed '1d')
+MESSAGE="Disk space before clean : $BEFORE_CLEAN<br>Disk space after clean : $AFTER_CLEAN<br>$EXEC_TIME"
 if [[ $SEND_NOTIFICATION == "yes" ]]; then
 	if [[ "$BEFORE_CLEAN" != "$AFTER_CLEAN" ]]; then
-		curl -s --form-string "token=$APP_TOKEN" --form-string "user=$USER_TOKEN" --form-string "message=Disk space before clean : $BEFORE_CLEAN<br>Disk space after clean : $AFTER_CLEAN" --form-string "html=1" https://api.pushover.net/1/messages.json > /dev/null
+		curl -s --form-string "token=$APP_TOKEN" --form-string "user=$USER_TOKEN" --form-string "message=$MESSAGE" --form-string "html=1" https://api.pushover.net/1/messages.json > /dev/null
+	else
+		curl -s --form-string "token=$APP_TOKEN" --form-string "user=$USER_TOKEN" --form-string "message=$EXEC_TIME" --form-string "html=1" https://api.pushover.net/1/messages.json > /dev/null
 	fi
 fi
+
