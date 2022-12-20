@@ -1,6 +1,6 @@
 #!/bin/bash
-RADARR_PATH="path"
-SONARR_PATH="path"
+RADARR_PATH="path to radarr import files"
+SONARR_PATH="path to sonarr import files"
 BASE_DIRECTORY="path to transmission downloads folder"
 readarray -d '' files1 < <(find $RADARR_PATH -type f -print0; find $SONARR_PATH -type f -print0)
 readarray -d '' files2 < <(find $BASE_DIRECTORY -name *.mkv ! -name '*sample*' -type f -print0)
@@ -82,5 +82,7 @@ AFTER_CLEAN=$(df -h | grep /DATA | awk '{print $4 " " $5}')
 APP_TOKEN="APP TOKEN"
 USER_TOKEN="USER TOKEN"
 if [[ $SEND_NOTIFICATION == "yes" ]]; then
-	curl -s --form-string "token=$APP_TOKEN" --form-string "user=$USER_TOKEN" --form-string "message=Disk space before clean : $BEFORE_CLEAN<br>Disk space after clean : $AFTER_CLEAN" --form-string "html=1" https://api.pushover.net/1/messages.json > /dev/null
+	if [[ "$BEFORE_CLEAN" != "$AFTER_CLEAN" ]]; then
+		curl -s --form-string "token=$APP_TOKEN" --form-string "user=$USER_TOKEN" --form-string "message=Disk space before clean : $BEFORE_CLEAN<br>Disk space after clean : $AFTER_CLEAN" --form-string "html=1" https://api.pushover.net/1/messages.json > /dev/null
+	fi
 fi
