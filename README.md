@@ -5,8 +5,6 @@ Sonarr and Radarr only delete the torrent when it has finished seeding. If you'r
 
 The goal is simple, the script must be run regularly via the crontab, it will look if files have been deleted in the Sonarr / Radarr folders (when you delete it in the web interface, and checked the box)by comparing with the files you have in your transmission download folder. If it notices a difference then it will go and delete the torrent on transmission via the API.
 
-To make it work you will still need to make some changes, here is the list of important things to change:
-
 YOU'LL NEED TO INSTALL JQ
 
 YOU HAVE TO MODIFY THE VARS.INI FILE TO PUT YOUR PATH / KEYS
