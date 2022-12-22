@@ -1,5 +1,5 @@
 #!/bin/bash
-source vars.ini
+source ../vars.ini
 START_TIME=$(date +%s)
 readarray -d '' files1 < <(find $RADARR_PATH -type f -print0 | sort -z; find $SONARR_PATH -type f -print0 | sort -z)
 readarray -d '' files2 < <(find $BASE_DIRECTORY -name *.mkv ! -name '*sample*' -type f -print0 | sort -z)
@@ -33,15 +33,15 @@ do
 	FOLDER_DEPTH_1="$(basename "$(dirname "$(dirname "$FIND_FILE")")")"
 	FOLDER_DEPTH_MAX="$(basename "$(dirname "$FIND_FILE")")"
 	if [[ -f $BASE_DIRECTORY/$FILE ]]; then
-		source functions.sh
+		source ../functions.sh
 		delete_torrent "$FILE"
 	elif [[ -f $BASE_DIRECTORY/$FOLDER_DEPTH_MAX/$FILE ]]; then
 		FILE="$FOLDER_DEPTH_MAX"
-		source functions.sh
+		source ../functions.sh
 		delete_torrent "$FILE"
 	elif [[ -f $BASE_DIRECTORY/$FOLDER_DEPTH_1/$FOLDER_DEPTH_MAX/$FILE ]]; then
 		FILE="$FOLDER_DEPTH_1"
-		source functions.sh
+		source ../functions.sh
 		delete_torrent "$FILE"
 	else
 		echo "File not found in transmission or already deleted"
