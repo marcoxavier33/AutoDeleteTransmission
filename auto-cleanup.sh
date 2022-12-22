@@ -1,8 +1,8 @@
 #!/bin/bash
 source vars.ini
 START_TIME=$(date +%s)
-readarray -d '' files1 < <(find $RADARR_PATH -type f -print0; find $SONARR_PATH -type f -print0)
-readarray -d '' files2 < <(find $BASE_DIRECTORY -name *.mkv ! -name '*sample*' -type f -print0)
+readarray -d '' files1 < <(find $RADARR_PATH -type f -print0 | sort -z; find $SONARR_PATH -type f -print0 | sort -z)
+readarray -d '' files2 < <(find $BASE_DIRECTORY -name *.mkv ! -name '*sample*' -type f -print0 | sort -z)
 
 for ((i=0; i<${#files2[@]}; i++))
 do
@@ -33,43 +33,16 @@ do
 	FOLDER_DEPTH_1="$(basename "$(dirname "$(dirname "$FIND_FILE")")")"
 	FOLDER_DEPTH_MAX="$(basename "$(dirname "$FIND_FILE")")"
 	if [[ -f $BASE_DIRECTORY/$FILE ]]; then
-		PERCENT_DONE=$(curl --silent -H "X-Transmission-Session-Id: $SESSION_ID" $API_URL -d '{"method":"torrent-get","arguments":{"fields":["name","id","percentDone"]}}' | jq -r '.arguments.torrents[] | select(.name=="'"$FILE"'") | .percentDone')
-                if [[ $PERCENT_DONE -eq 1 ]]; then
-			ID_TORRENT=$(curl --silent -H "X-Transmission-Session-Id: $SESSION_ID" $API_URL -d '{"method":"torrent-get","arguments":{"fields":["name","id"]}}' | jq -r '.arguments.torrents[] | select(.name=="'"$FILE"'") | .id')
-			if [[ $AUTO_DELETE == "yes" ]]; then
-				PAYLOAD=$(echo "{\"method\":\"torrent-remove\",\"arguments\":{\"ids\":[$ID_TORRENT],\"delete-local-data\":true}}" | jq -c)			
-				curl -X POST $API_URL -H "X-Transmission-Session-Id: $SESSION_ID" -d $PAYLOAD > /dev/null
-			elif [[ $AUTO_DELETE == "no" ]]; then
-				echo "$FILE"
-				echo "$ID_TORRENT"
-			fi
-		fi
+		source functions.sh
+		delete_torrent "$FILE"
 	elif [[ -f $BASE_DIRECTORY/$FOLDER_DEPTH_MAX/$FILE ]]; then
 		FILE="$FOLDER_DEPTH_MAX"
-		PERCENT_DONE=$(curl --silent -H "X-Transmission-Session-Id: $SESSION_ID" $API_URL -d '{"method":"torrent-get","arguments":{"fields":["name","id","percentDone"]}}' | jq -r '.arguments.torrents[] | select(.name=="'"$FILE"'") | .percentDone')
-                if [[ $PERCENT_DONE -eq 1 ]]; then		
-			ID_TORRENT=$(curl --silent -H "X-Transmission-Session-Id: $SESSION_ID" $API_URL -d '{"method":"torrent-get","arguments":{"fields":["name","id"]}}' | jq -r '.arguments.torrents[] | select(.name=="'"$FILE"'") | .id')
-			if [[ $AUTO_DELETE == "yes" ]]; then
-				PAYLOAD=$(echo "{\"method\":\"torrent-remove\",\"arguments\":{\"ids\":[$ID_TORRENT],\"delete-local-data\":true}}" | jq -c)
-				curl -X POST $API_URL -H "X-Transmission-Session-Id: $SESSION_ID" -d $PAYLOAD > /dev/null
-			elif [[ $AUTO_DELETE == "no" ]]; then
-				echo "$FILE"
-				echo "$ID_TORRENT"
-			fi
-		fi
+		source functions.sh
+		delete_torrent "$FILE"
 	elif [[ -f $BASE_DIRECTORY/$FOLDER_DEPTH_1/$FOLDER_DEPTH_MAX/$FILE ]]; then
 		FILE="$FOLDER_DEPTH_1"
-		PERCENT_DONE=$(curl --silent -H "X-Transmission-Session-Id: $SESSION_ID" $API_URL -d '{"method":"torrent-get","arguments":{"fields":["name","id","percentDone"]}}' | jq -r '.arguments.torrents[] | select(.name=="'"$FILE"'") | .percentDone')
-                if [[ $PERCENT_DONE -eq 1 ]]; then		
-			ID_TORRENT=$(curl --silent -H "X-Transmission-Session-Id: $SESSION_ID" $API_URL -d '{"method":"torrent-get","arguments":{"fields":["name","id"]}}' | jq -r '.arguments.torrents[] | select(.name=="'"$FILE"'") | .id')
-			if [[ $AUTO_DELETE == "yes" ]]; then
-				PAYLOAD=$(echo "{\"method\":\"torrent-remove\",\"arguments\":{\"ids\":[$ID_TORRENT],\"delete-local-data\":true}}" | jq -c)
-				curl -X POST $API_URL -H "X-Transmission-Session-Id: $SESSION_ID" -d $PAYLOAD > /dev/null
-			elif [[ $AUTO_DELETE == "no" ]]; then
-				echo "$FILE"
-				echo "$ID_TORRENT"
-			fi
-		fi
+		source functions.sh
+		delete_torrent "$FILE"
 	else
 		echo "File not found in transmission or already deleted"
 	fi
